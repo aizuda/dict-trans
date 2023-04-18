@@ -63,7 +63,8 @@ EasyTranslate
 ### 引入jar包
 
 ```xml
-<!-- 自行编译 -->
+<!-- 可自行编译 或 从中央仓库引入 -->
+<!-- https://central.sonatype.com/artifact/com.aizuda/dict-trans -->
 <dependency>
     <groupId>com.aizuda</groupId>
     <artifactId>dict-trans</artifactId>
