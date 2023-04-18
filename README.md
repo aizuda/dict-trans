@@ -75,7 +75,6 @@ EasyTranslate
     <groupId>cn.hutool</groupId>
     <artifactId>hutool-all</artifactId>
     <version>${hutool.version}</version>
-    <optional>true</optional>
 </dependency>
 
 <!-- 数据库 -->
@@ -99,7 +98,7 @@ EasyTranslate
 spring:
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&allowMultiQueries=true&useSSL=false&rewriteBatchedStatements=true
+    url: jdbc:mysql://127.0.0.1:3306/t_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&allowMultiQueries=true&useSSL=false&rewriteBatchedStatements=true
     username: root
     password: 123456
 ```
@@ -392,3 +391,10 @@ public class TranslatorTest {
 ## 附注
 
 该项目得益于 [Transformer v1 版本](https://github.com/luo-zhan/Transformer) 增加了 脱敏，完善了 数据库翻译 等功能。（Transformer可能是最简单，但最强大的字段转换插件，一个注解搞定任意转换，让开发变得更加丝滑），基本上就是在此项目上增加功能。
+
+## 特别鸣谢
+
+> 感谢以下的项目,排名不分先后
+
+* [Hutool](https://hutool.cn) Hutool是一个Java工具包，让Java语言也可以“甜甜的”。
+* [MyBatis-Plus](https://baomidou.com/) MyBatis-Plus (opens new window)（简称 MP）是一个 MyBatis (opens new window)的增强工具，在 MyBatis 的基础上只做增强不做改变，为简化开发、提高效率而生。
