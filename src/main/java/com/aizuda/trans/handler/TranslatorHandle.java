@@ -159,7 +159,7 @@ public class TranslatorHandle {
      * @param groupValue       组别的值，由使用者指定
      * @param conditionValue   条件字段值
      * @return {@link List }<{@link Object }>
-     * @author song_jx
+     * @author nn200433
      */
     public static List<Object> parse(String originValue, Dictionary dictionaryConfig, Class<?> dictClass, String groupValue,
                                      String conditionValue) {
@@ -176,7 +176,7 @@ public class TranslatorHandle {
      *
      * @param origins 对象数组
      * @return {@link FormatType }
-     * @author song_jx
+     * @author nn200433
      */
     private static <T> FormatType getFieldType(List<T> origins) {
         T element = origins.get(0);
@@ -199,7 +199,7 @@ public class TranslatorHandle {
      *
      * @param translateConfig 转换配置
      * @return {@link Class }<{@link ? }>
-     * @author song_jx
+     * @author nn200433
      */
     private static Class<?> getDictClass(Translate translateConfig) {
         final Class<?> classType = translateConfig.dictClass();
@@ -212,7 +212,7 @@ public class TranslatorHandle {
      * @param dictClass       字典配置类
      * @param translateConfig 转换配置
      * @return {@link Dictionary }
-     * @author song_jx
+     * @author nn200433
      */
     private static Dictionary handle(Class<?> dictClass, Translate translateConfig) {
         // Class<?>   dictClass                         = getDictClass(translateConfig);
@@ -274,7 +274,7 @@ public class TranslatorHandle {
      * @param translateConfig 转换配置
      * @param originFieldName 原始字段名称
      * @return {@link List }<{@link String }>
-     * @author song_jx
+     * @author nn200433
      */
     private static List<String> getTranslateFieldName(Translate translateConfig, String originFieldName) {
         String[]     translateFieldArray = translateConfig.translateField();
@@ -299,7 +299,7 @@ public class TranslatorHandle {
      * @param o         对象
      * @param fieldName 字段名称
      * @return {@link Object }
-     * @author song_jx
+     * @author nn200433
      */
     private static Object getProperty(Object o, String fieldName) {
         if (o instanceof Map) {
@@ -318,7 +318,7 @@ public class TranslatorHandle {
      * @param originFieldName     未翻译的字段名
      * @param writeFieldList      待写入翻译的字段名称列表
      * @param valueList           待写入翻译的值的列表
-     * @author song_jx
+     * @author nn200433
      */
     private static void setProperty(Object o, boolean isRemoveOriginField, String originFieldName, List<String> writeFieldList,
                                     List<Object> valueList) {
@@ -353,7 +353,7 @@ public class TranslatorHandle {
      * @param fieldName 字段名称
      * @param prefix    前缀
      * @return {@link Method }
-     * @author song_jx
+     * @author nn200433
      */
     private static Method getMethod(Class<?> clazz, String fieldName, String prefix) {
         final String methodName = prefix + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
@@ -368,7 +368,7 @@ public class TranslatorHandle {
      * @param desensitizedModel  脱敏模型
      * @param translateValueList 翻译值
      * @return {@link List }<{@link Object }>
-     * @author song_jx
+     * @author nn200433
      */
     private static List<Object> desensitizedHandle(String desensitizedModel, List<Object> translateValueList) {
         // 如果敏感词模型为空，则将返回默认翻译值
@@ -403,7 +403,7 @@ public class TranslatorHandle {
      * @param dictClass       字典class
      * @param translatorClass 实际翻译类
      * @return {@link Translatable }
-     * @author song_jx
+     * @author nn200433
      */
     private static Translatable getTranslatable(Class<?> dictClass, Class<? extends Translatable> translatorClass) {
         // 没这样写（dictionary = @Dictionary(translator = UserInfoTranslatorImpl.class)）一律认为是默认的 Translatable

@@ -43,7 +43,7 @@ public interface DemoService {
      * json演示
      *
      * @return {@link List }<{@link People3 }>
-     * @author song_jx
+     * @author nn200433
      */
     public List<People3> jsonDemo();
     

@@ -54,7 +54,7 @@ public interface IEnum {
      * 获取code
      *
      * @return {@link String }
-     * @author song_jx
+     * @author nn200433
      */
     default String getCode() {
         return EnumPool.getDict(this).getCode();
@@ -64,7 +64,7 @@ public interface IEnum {
      * 获取text
      *
      * @return {@link String }
-     * @author song_jx
+     * @author nn200433
      */
     default String getText() {
         return EnumPool.getDict(this).getText();

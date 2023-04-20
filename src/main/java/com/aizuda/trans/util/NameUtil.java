@@ -19,7 +19,7 @@ public class NameUtil {
      * @param param 参数
      * @param type  类型
      * @return {@link String }
-     * @author song_jx
+     * @author nn200433
      */
     public static String parseCamelTo(String param, FormatType type) {
         if (type == FormatType.CAMEL) {
