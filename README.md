@@ -41,16 +41,21 @@ EasyTranslate
      │                   │   ├── EnumPool.java
      │                   │   ├── FormatType.java
      │                   │   └── IEnum.java
+     │                   ├── handler                                              主要操作类
+     │                   │   └── TranslatorHandle.java
+     │                   ├── json                                                 json相关
+     │                   │   ├── IJsonConvert.java
+     │                   │   └── JSONConvert.java
      │                   ├── service
-     │                   │   ├── DictTranslateService.java                        字典翻译接口
      │                   │   ├── impl
      │                   │   │   ├── DefaultDictTranslateServiceImpl.java         默认数据字典翻译实现（实现字典翻译接口。仿照该方法，实现自己的业务）
      │                   │   │   ├── DictCacheTranslator.java                     数据字典翻译实现（调用 字典翻译接口实现）
      │                   │   │   ├── DataBaseTranslator.java                      数据库翻译服务
      │                   │   │   ├── DesensitizedTranslator.java                  脱敏实现（没啥操作，就返回原值）
      │                   │   │   ├── EnumTranslator.java                          枚举翻译实现
-     │                   │   │   └── TranslatorHandle.java                        翻译操作类
-     │                   │   └── Translatable.java                                翻译接口（字典、枚举、....接实现该接口）
+     │                   │   │   └── JsonConvertTranslator.java                   json翻译实现
+     │                   │   ├── Translatable.java                                翻译接口（字典、枚举、....接实现该接口）
+     │                   │   └── DictTranslateService.java                        字典翻译接口
      │                   ├── TranslatorBootApplication.java
      │                   └── util                                                 一些工具类
      │                       ├── LambdaUtil.java
@@ -68,7 +73,7 @@ EasyTranslate
 <dependency>
     <groupId>com.aizuda</groupId>
     <artifactId>dict-trans</artifactId>
-    <version>${latestVersion}</version>
+    <version>0.2</version>
 </dependency>
 
 <!-- hutool工具类 -->
@@ -309,7 +314,13 @@ private String id;
 private String zh;
 
 private String zsxm;
+    
+// =========================== 示例7 json字符串翻译为json对象 ===========================
+    
+@Translate(dictClass = JSONConvert.class, translateField = "jsonObj")
+private String json;
 
+private Object jsonObj;
 ```
 
 #### @Translator

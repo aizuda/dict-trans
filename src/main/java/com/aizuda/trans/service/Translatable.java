@@ -13,7 +13,7 @@ import java.util.List;
  * @create 2020-04
  */
 public interface Translatable {
-
+    
     /**
      * 自定义翻译方法，需要自己实现
      *
@@ -22,8 +22,10 @@ public interface Translatable {
      * @param origin         待翻译的原始值（对应字典code属性）
      * @param dictConfig     字典注解，可获取属性配置
      * @param dictClass      字典class
-     * @return 字典value，可以返回null值，翻译时会处理（如果为null则显示原始值）
+     * @return {@link List }<{@link Object }> 字典value，可以返回null值，翻译时会处理（如果为null则显示原始值）
+     * @author nn200433
      */
-    public List<String> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig, Class dictClass);
-
+    public List<Object> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig,
+                                  Class dictClass);
+    
 }

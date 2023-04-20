@@ -7,4 +7,5 @@ package com.aizuda.trans.desensitized;
  * @date 2022-12-08 008 10:47:22
  */
 public interface IDesensitized {
+
 }

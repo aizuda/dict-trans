@@ -14,11 +14,11 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class TranslatorConfig {
-
+    
     @Bean
     @ConditionalOnMissingBean
     public DictTranslateService dictTranslateService() {
         return new DefaultDictTranslateServiceImpl();
     }
-
+    
 }

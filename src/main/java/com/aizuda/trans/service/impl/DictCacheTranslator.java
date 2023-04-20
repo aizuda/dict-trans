@@ -19,14 +19,15 @@ import java.util.List;
 @Slf4j
 @Component
 public class DictCacheTranslator implements Translatable {
-
+    
     @Autowired
     private DictTranslateService dictTranslateService;
-
+    
     @Override
     @SuppressWarnings("unchecked")
-    public List<String> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig, Class dictClass) {
+    public List<Object> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig,
+                                  Class dictClass) {
         return Collections.singletonList(dictTranslateService.findDictLabel(groupValue, origin));
     }
-
+    
 }

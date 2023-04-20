@@ -19,9 +19,10 @@ public @interface Translate {
      * 字典配置类 指定的class上必须有@Dictionary注解或者是IDictEnum接口的实现类 注：一般情况下，本属性必须指定（或者使用别名value属性）
      *
      * <ul>
-     *     <li>DictTranslate 实现类：字典翻译</li>
-     *     <li>IEnum 实现类：枚举翻译</li>
+     *     <li>Dict：字典翻译</li>
+     *     <li>IDict实现类：枚举翻译</li>
      *     <li>Desensitized: 脱敏翻译</li>
+     *     <li>JSONConvert: json字符串翻译</li>
      *     <li>其他: 数据库翻译</li>
      * </ul>
      */

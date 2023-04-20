@@ -5,6 +5,7 @@ import com.aizuda.trans.demo.DemoService;
 import com.aizuda.trans.entity.Device;
 import com.aizuda.trans.entity.People;
 import com.aizuda.trans.entity.People2;
+import com.aizuda.trans.entity.People3;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,19 +30,25 @@ public class TranslatorTest {
     @Test
     public void demo1() {
         List<People> peopleList = demoService.dictDemo();
-        Console.log("---> 翻译结果：{}", peopleList);
+        Console.log("---> 字典 & 脱敏 翻译结果：{}", peopleList);
     }
     
     @Test
     public void demo2() {
         List<Device> deviceList = demoService.enumDemo();
-        Console.log("---> 翻译结果：{}", deviceList);
+        Console.log("---> 枚举 翻译结果：{}", deviceList);
     }
     
     @Test
     public void demo3() {
         List<People2> peopleList = demoService.dbDemo();
-        Console.log("---> 翻译结果：{}", peopleList);
+        Console.log("---> 数据库 翻译结果：{}", peopleList);
+    }
+    
+    @Test
+    public void demo4() {
+        List<People3> peopleList = demoService.jsonDemo();
+        Console.log("---> json 翻译结果：{}", peopleList);
     }
     
 }

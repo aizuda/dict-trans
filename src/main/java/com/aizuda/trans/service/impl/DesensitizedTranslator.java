@@ -17,11 +17,12 @@ import java.util.List;
 @Slf4j
 @Component
 public class DesensitizedTranslator implements Translatable {
-
+    
     @Override
-    public List<String> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig, Class dictClass) {
+    public List<Object> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig,
+                                  Class dictClass) {
         // 直接返回原值
         return Collections.singletonList(origin);
     }
-
+    
 }

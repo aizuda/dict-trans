@@ -9,10 +9,10 @@ import com.aizuda.trans.service.DictTranslateService;
  * @date 2022-08-18 018 16:32:24
  */
 public class DefaultDictTranslateServiceImpl implements DictTranslateService {
-
+    
     @Override
     public String findDictLabel(String dictCode, String dictValue) {
         return dictValue;
     }
-
+    
 }

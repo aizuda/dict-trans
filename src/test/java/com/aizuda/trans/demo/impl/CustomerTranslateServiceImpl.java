@@ -18,9 +18,9 @@ import java.util.List;
 public class CustomerTranslateServiceImpl implements Translatable {
     
     @Override
-    public List<String> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig,
+    public List<Object> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig,
                                   Class dictClass) {
-        List<String> rList = new ArrayList<String>(1);
+        List<Object> rList = new ArrayList<Object>(1);
         if (StrUtil.equals(origin, "1")) {
             rList.add("结果1");
         } else {

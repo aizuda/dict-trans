@@ -3,6 +3,7 @@ package com.aizuda.trans.demo;
 import com.aizuda.trans.entity.Device;
 import com.aizuda.trans.entity.People;
 import com.aizuda.trans.entity.People2;
+import com.aizuda.trans.entity.People3;
 
 import java.util.List;
 
@@ -37,5 +38,13 @@ public interface DemoService {
      * @author nn200433
      */
     public List<People2> dbDemo();
+    
+    /**
+     * json演示
+     *
+     * @return {@link List }<{@link People3 }>
+     * @author song_jx
+     */
+    public List<People3> jsonDemo();
     
 }

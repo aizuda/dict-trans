@@ -1,7 +1,7 @@
 package com.aizuda.trans.aspect;
 
 import com.aizuda.trans.annotation.Translator;
-import com.aizuda.trans.service.impl.TranslatorHandle;
+import com.aizuda.trans.handler.TranslatorHandle;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -22,19 +22,19 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class TranslateAspect {
-
+    
     @Pointcut("@annotation(com.aizuda.trans.annotation.Translator)")
     public void pointCut() {
     }
-
+    
     @AfterReturning(pointcut = "pointCut()", returning = "object")
     public void doAfter(JoinPoint joinPoint, Object object) {
         if (null == object) {
             return;
         }
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        Translator config = signature.getMethod().getAnnotation(Translator.class);
+        Translator      config    = signature.getMethod().getAnnotation(Translator.class);
         TranslatorHandle.parse(object, config.value());
     }
-
+    
 }

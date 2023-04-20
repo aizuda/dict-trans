@@ -18,16 +18,18 @@ import java.util.stream.Stream;
  */
 @Component
 public class EnumTranslator implements Translatable {
-
+    
     @Override
     @SuppressWarnings("unchecked")
-    public List<String> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig, Class dictClass) {
-        Assert.isTrue(IEnum.class.isAssignableFrom(dictClass), dictClass.getSimpleName() + "不是IDictEnum的实现类，无法使用EnumTranslator进行翻译");
+    public List<Object> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig,
+                                  Class dictClass) {
+        Assert.isTrue(IEnum.class.isAssignableFrom(dictClass),
+                      dictClass.getSimpleName() + "不是IDictEnum的实现类，无法使用EnumTranslator进行翻译");
         final String s = Stream.of(((Class<IEnum>) dictClass).getEnumConstants())
                 .filter((IEnum e) -> e.getCode().equals(origin))
                 .map(IEnum::getText)
                 .findAny().orElse(null);
         return Collections.singletonList(s);
     }
-
+    
 }
