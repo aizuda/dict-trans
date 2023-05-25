@@ -1,5 +1,7 @@
 # dict-trans
 
+![logo](./doc/imgs/logo.png)
+
 ## 前言
 
 简单的字典翻译组件
