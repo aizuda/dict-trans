@@ -1,6 +1,6 @@
-# dict-trans
-
 ![logo](./doc/imgs/logo.png)
+
+# dict-trans
 
 ## 前言
 
