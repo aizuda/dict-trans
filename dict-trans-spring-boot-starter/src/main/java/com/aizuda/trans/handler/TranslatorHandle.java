@@ -96,8 +96,8 @@ public class TranslatorHandle {
             final Field[]  declaredFields = ReflectUtil.getFields(beanClass);
             // 循环处理需要转换的字段，字段上的注解链上需要有@Transform，且字段类型必须为String
             Arrays.stream(declaredFields)
-                    // 只转换String类型的属性，其他类型的属性代表是嵌套情况需要过滤掉，后面处理
-                    .filter(field -> field.getType() == String.class && AnnotationUtil.hasAnnotation(field, Translate.class))
+                    // 只转换简单值类型的属性（会把值转为String类型处理），其他类型的属性代表是嵌套情况需要过滤掉，后面处理
+                    .filter(field -> ClassUtil.isSimpleValueType(field.getType()) && AnnotationUtil.hasAnnotation(field, Translate.class))
                     .forEach(field -> transformField(bean, fieldFormatType, field));
             // 转换嵌套字段，字段上需要标注@Transform且字段类型不为String（递归转换）
             Arrays.stream(declaredFields)
