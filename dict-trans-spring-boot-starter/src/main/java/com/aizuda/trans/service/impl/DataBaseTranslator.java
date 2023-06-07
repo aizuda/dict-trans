@@ -1,5 +1,6 @@
 package com.aizuda.trans.service.impl;
 
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.Opt;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -9,6 +10,7 @@ import cn.hutool.db.Entity;
 import cn.hutool.db.handler.EntityHandler;
 import cn.hutool.db.handler.EntityListHandler;
 import com.aizuda.trans.annotation.Dictionary;
+import com.aizuda.trans.entity.ExtendParam;
 import com.aizuda.trans.enums.FormatType;
 import com.aizuda.trans.service.Translatable;
 import com.aizuda.trans.util.NameUtil;
@@ -16,7 +18,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -43,23 +44,22 @@ public class DataBaseTranslator implements Translatable {
     private DataSource dataSource;
     
     @Override
-    public List<Object> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig,
-                                  Class dictClass) {
+    public List<Object> translate(String origin, Dictionary dictConfig, ExtendParam extendParam) {
         // 获取参数
-        String   codeColumn      = dictConfig.codeColumn();
-        String[] textColumnArray = dictConfig.textColumn();
-        String   groupColumn     = dictConfig.groupColumn();
-        String   tableName       = getTableName(dictConfig, dictClass);
-        
-        Assert.isTrue(StrUtil.isNotEmpty(codeColumn),
-                      "@Dictionary注解codeColumn配置有误，找不到指定的属性名，class:" + dictClass.getSimpleName());
-        Assert.isTrue(ArrayUtil.isNotEmpty(textColumnArray),
-                      "@Dictionary注解textColumn配置有误，找不到指定的属性名，class:" + dictClass.getSimpleName());
+        final String   codeColumn      = dictConfig.codeColumn();
+        final String[] textColumnArray = dictConfig.textColumn();
+        final String   groupColumn     = dictConfig.groupColumn();
+        final Class    dictClass       = extendParam.getDictClass();
+        final String   groupValue      = extendParam.getGroupValue();
+        final String   simpleName      = dictClass.getSimpleName();
+        final String   tableName       = getTableName(dictConfig, dictClass);
+
+        Assert.isTrue(StrUtil.isNotBlank(codeColumn), "@Dictionary注解codeColumn配置有误，找不到指定的属性名，class: {}", simpleName);
+        Assert.isTrue(ArrayUtil.isNotEmpty(textColumnArray), "@Dictionary注解textColumn配置有误，找不到指定的属性名，class: {}", simpleName);
         
         List<Object> rsList = new ArrayList<Object>(textColumnArray.length);
         try {
-            log.debug("---> 触发字典翻译：查询表 {} 中的字段 {} ，查询条件 {} = {}", tableName, textColumnArray, codeColumn,
-                      origin);
+            log.debug("---> 触发字典翻译：查询表 {} 中的字段 {} ，查询条件 {} = {}", tableName, textColumnArray, codeColumn, origin);
             
             // 查询条件为空时直接返回相对应个数的空数组
             if (ObjectUtil.isNull(origin) || StrUtil.isBlank(origin)) {
@@ -117,8 +117,7 @@ public class DataBaseTranslator implements Translatable {
         
         // 类名转表名
         final String className = dictClass.getSimpleName();
-        String       tName     = className.substring(0, 1) + NameUtil.parseCamelTo(className.substring(1),
-                                                                                   FormatType.UPPERCASE_UNDERLINE);
+        String       tName     = className.substring(0, 1) + NameUtil.parseCamelTo(className.substring(1), FormatType.UPPERCASE_UNDERLINE);
         
         // 获取mp注解上的表名
         TableName tableName = (TableName) dictClass.getAnnotation(TableName.class);

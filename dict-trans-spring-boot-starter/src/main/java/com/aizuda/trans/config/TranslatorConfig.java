@@ -1,7 +1,9 @@
 package com.aizuda.trans.config;
 
 import com.aizuda.trans.service.DictTranslateService;
+import com.aizuda.trans.service.SummaryExtractService;
 import com.aizuda.trans.service.impl.DefaultDictTranslateServiceImpl;
+import com.aizuda.trans.service.impl.DefaultSummaryExtractServiceImpl;
 import com.aizuda.trans.service.impl.wrapper.IPageUnWrapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +31,19 @@ public class TranslatorConfig {
     public DictTranslateService dictTranslateService() {
         return new DefaultDictTranslateServiceImpl();
     }
+
+    /**
+     * 注册摘要提取服务默认实现
+     *
+     * @return {@link DictTranslateService }
+     * @author song_jx
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public SummaryExtractService summaryExtractService() {
+        return new DefaultSummaryExtractServiceImpl();
+    }
+
 
     /**
      * 注册IPage解包器

@@ -12,11 +12,13 @@ import com.aizuda.trans.annotation.Translate;
 import com.aizuda.trans.annotation.Translator;
 import com.aizuda.trans.desensitized.IDesensitized;
 import com.aizuda.trans.dict.DictTranslate;
+import com.aizuda.trans.entity.ExtendParam;
 import com.aizuda.trans.enums.FormatType;
 import com.aizuda.trans.enums.IEnum;
 import com.aizuda.trans.json.IJsonConvert;
 import com.aizuda.trans.service.Translatable;
 import com.aizuda.trans.service.impl.*;
+import com.aizuda.trans.summary.ISummaryExtract;
 import com.aizuda.trans.util.NameUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -113,20 +115,16 @@ public class TranslatorHandle {
      *
      * @param originValue      原始值
      * @param dictionaryConfig 字典配置
-     * @param dictClass        字典class（包含组别属性、字典code属性、字典值属性三个信息）
-     * @param groupValue       组别的值，由使用者指定
-     * @param conditionValue   条件字段值
+     * @param extendParam      扩展参数
      * @return {@link List }<{@link Object }>
      * @author nn200433
      */
-    public static List<Object> parse(String originValue, Dictionary dictionaryConfig, Class<?> dictClass, String groupValue,
-                                     String conditionValue) {
+    public static List<Object> parse(String originValue, Dictionary dictionaryConfig, ExtendParam  extendParam) {
         if (originValue == null) {
             return null;
         }
-        final Translatable translator = getTranslatable(dictClass, dictionaryConfig.translator());
-        return CollUtil.defaultIfEmpty(translator.translate(groupValue, conditionValue, originValue, dictionaryConfig, dictClass),
-                                       Collections.emptyList());
+        final Translatable translator  = getTranslatable(extendParam.getDictClass(), dictionaryConfig.translator());
+        return CollUtil.defaultIfEmpty(translator.translate(originValue, dictionaryConfig, extendParam), Collections.emptyList());
     }
 
     /**
@@ -148,6 +146,7 @@ public class TranslatorHandle {
         final String       groupValue        = translateConfig.groupValue();
         final String       conditionField    = translateConfig.conditionField();
         final String       desensitizedModel = translateConfig.desensitizedModel();
+        final int          maxLen            = translateConfig.maxLen();
         final Dictionary   dictionaryConfig  = handle(dictClass, translateConfig);
         final boolean      isJsonConvert     = IJsonConvert.class.isAssignableFrom(dictClass);
 
@@ -164,7 +163,8 @@ public class TranslatorHandle {
         }
 
         // 获取翻译结果并脱敏处理
-        List<Object> translateValList = parse(originValue, dictionaryConfig, dictClass, groupValue, conditionFieldValue);
+        final ExtendParam extendParam      = new ExtendParam(groupValue, conditionFieldValue, dictClass, maxLen);
+        List<Object>      translateValList = parse(originValue, dictionaryConfig, extendParam);
         if (!isJsonConvert) {
             // 不是 JsonConvert.class 时可进行脱敏
             translateValList = desensitizedHandle(desensitizedModel, translateValList);
@@ -280,11 +280,18 @@ public class TranslatorHandle {
      * @author nn200433
      */
     private static List<String> getTranslateFieldName(Translate translateConfig, String originFieldName) {
-        String[]     translateFieldArray = translateConfig.translateField();
-        final int    translateFieldLen   = translateFieldArray.length;
-        final String newName             = originFieldName.replaceFirst("(Id|Code)$|$", "Name");
+        final Class<?> dictClass           = translateConfig.dictClass();
+        final String   newName             = originFieldName.replaceFirst("(Id|Code)$|$", "Name");
+        String[]       translateFieldArray = translateConfig.translateField();
+        final int      translateFieldLen   = translateFieldArray.length;
         if (translateFieldLen == 0) {
-            translateFieldArray = new String[]{newName};
+            if (IDesensitized.class.isAssignableFrom(dictClass) || ISummaryExtract.class.isAssignableFrom(dictClass)) {
+                // 脱敏与摘要提取功能，没配置翻译字段，直接返回原字段（即替换原始数据）
+                translateFieldArray = new String[]{originFieldName};
+            } else {
+                // 否则返回额外提供的翻译字段
+                translateFieldArray = new String[]{newName};
+            }
         } else {
             for (int i = 0; i < translateFieldLen; i++) {
                 final String translateField = translateFieldArray[i];
@@ -424,6 +431,9 @@ public class TranslatorHandle {
             } else if (IJsonConvert.class.isAssignableFrom(dictClass)) {
                 // 4.dictClass是JSON类，采用JSON翻译
                 translatorClass = JsonConvertTranslator.class;
+            } else if (ISummaryExtract.class.isAssignableFrom(dictClass)) {
+                // 5.dictClass是JSON类，采用JSON翻译
+                translatorClass = SummaryExtractTranslator.class;
             } else {
                 // 5.否则使用数据库翻译
                 translatorClass = DataBaseTranslator.class;

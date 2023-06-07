@@ -23,13 +23,20 @@ public @interface Translate {
      *     <li>IDict实现类：枚举翻译</li>
      *     <li>Desensitized: 脱敏翻译</li>
      *     <li>JSONConvert: json字符串翻译</li>
+     *     <li>SummaryExtract: 摘要提取</li>
      *     <li>其他: 数据库翻译</li>
      * </ul>
      */
     Class<?> dictClass() default void.class;
     
     /**
-     * 翻译后的属性名，注意使用驼峰命名 默认为原属性名去除末尾的"Id"和"Code"再接上"Name"
+     * 翻译后的属性名，注意使用驼峰命名
+     * <ul>
+     *     <li>1. 不填时默认为原属性名去除末尾的"Id"和"Code"再接上"Name"</li>
+     *     <li>2. Desensitized（脱敏） 与 SummaryExtract（摘要提取）不填时默认为原字段</li>
+     * </ul>
+     *
+     *
      */
     String[] translateField() default {};
     
@@ -64,5 +71,14 @@ public @interface Translate {
      * </ul>
      */
     String desensitizedModel() default DesensitizedTypeConstants.EMPTY;
-    
+
+    /**
+     * 最大长度限制
+     * 适用于以下翻译
+     * <ul>
+     *     <li>1. 摘要提取长度限制</li>
+     * </ul>
+     */
+    int maxLen() default Integer.MAX_VALUE;
+
 }

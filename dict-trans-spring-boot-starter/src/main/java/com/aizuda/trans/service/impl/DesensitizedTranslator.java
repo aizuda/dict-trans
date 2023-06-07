@@ -1,6 +1,7 @@
 package com.aizuda.trans.service.impl;
 
 import com.aizuda.trans.annotation.Dictionary;
+import com.aizuda.trans.entity.ExtendParam;
 import com.aizuda.trans.service.Translatable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,8 +20,7 @@ import java.util.List;
 public class DesensitizedTranslator implements Translatable {
     
     @Override
-    public List<Object> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig,
-                                  Class dictClass) {
+    public List<Object> translate(String origin, Dictionary dictConfig, ExtendParam extendParam) {
         // 直接返回原值
         return Collections.singletonList(origin);
     }

@@ -1,6 +1,7 @@
 package com.aizuda.trans.service;
 
 import com.aizuda.trans.annotation.Dictionary;
+import com.aizuda.trans.entity.ExtendParam;
 
 import java.util.List;
 
@@ -13,19 +14,16 @@ import java.util.List;
  * @create 2020-04
  */
 public interface Translatable {
-    
+
     /**
      * 自定义翻译方法，需要自己实现
      *
-     * @param groupValue     字典group值，不用可忽略（如静态字典需要先通过group值确定范围，再根据code值得到对应的value）
-     * @param conditionValue 条件字段值（仅限用户自定义时生效）
-     * @param origin         待翻译的原始值（对应字典code属性）
-     * @param dictConfig     字典注解，可获取属性配置
-     * @param dictClass      字典class
-     * @return {@link List }<{@link Object }> 字典value，可以返回null值，翻译时会处理（如果为null则显示原始值）
-     * @author nn200433
+     * @param origin      待翻译的原始值（对应字典code属性）
+     * @param dictConfig  字典注解，可获取属性配置
+     * @param extendParam 扩展参数
+     * @return {@link List }<{@link Object }>
+     * @author song_jx
      */
-    public List<Object> translate(String groupValue, String conditionValue, String origin, Dictionary dictConfig,
-                                  Class dictClass);
-    
+    public List<Object> translate(String origin, Dictionary dictConfig, ExtendParam extendParam);
+
 }
