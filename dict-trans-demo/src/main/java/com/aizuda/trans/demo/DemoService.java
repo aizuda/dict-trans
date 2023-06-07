@@ -24,7 +24,7 @@ public interface DemoService {
      * 字典 & 脱敏 & 摘要提取 演示
      *
      * @return {@link List }<{@link People }>
-     * @author song_jx
+     * @author nn200433
      */
     public List<People> dictDemo2();
     
