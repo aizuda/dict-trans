@@ -14,6 +14,7 @@
 * [x] 自定义翻译
 * [x] 翻译结果脱敏
 * [x] json字符串翻译为json对象
+* [x] 文章摘要提取（富文本将会变为纯文本）
 * [x] 嵌套翻译
 
 ## 项目结构
@@ -27,31 +28,37 @@ dict-trans
  │               └── com
  │                   └── aizuda
  │                       └── trans
- │                           ├── annotation                                                翻译注解
+ │                           ├── annotation                                               翻译注解
  │                           │   ├── Dictionary.java                                      字典注解，标识在字典数据类上（自动生成查询 SQL）
  │                           │   ├── Translate.java                                       翻译字段注解，标识在需要翻译的字段上
  │                           │   └── Translator.java                                      翻译方法注解，对方法返回值进行翻译
- │                           ├── constants                                                 常量配置
+ │                           ├── constants                                                常量配置
  │                           │   └── DesensitizedTypeConstants.java
- │                           ├── desensitized                                              脱敏相关
+ │                           ├── desensitized                                             脱敏相关
  │                           │   ├── Desensitized.java
  │                           │   └── IDesensitized.java
- │                           ├── dict                                                      数据字典相关
+ │                           ├── dict                                                     数据字典相关
  │                           │   └── DictTranslate.java
- │                           ├── enums                                                     枚举相关
+ │                           ├── entity                                                   参数实体相关
+ │                           │   └── ExtendParam.java
+ │                           ├── enums                                                    枚举相关
  │                           │   ├── EnumPool.java
  │                           │   ├── FormatType.java
  │                           │   └── IEnum.java
- │                           ├── json                                                      json相关
+ │                           ├── json                                                     json相关
  │                           │   ├── IJsonConvert.java
  │                           │   └── JSONConvert.java
+ │                           ├── summary                                                  摘要提取相关
+ │                           │   ├── ISummaryExtract.java
+ │                           │   └── SummaryExtract.java
  │                           ├── service
- │                           │   ├── DictTranslateService.java                            字典翻译接口
+ │                           │   ├── DictTranslateService.java                            字典翻译接口（用户可自定义实现字典翻译功能）
+ │                           │   ├── SummaryExtractService.java                           摘要提取服务接口（用户可自定义实现摘要提取功能）
  │                           │   └── Translatable.java                                    翻译接口（字典、枚举、....接实现该接口）
- │                           └── util                                                      一些工具类
+ │                           └── util                                                     一些工具类
  │                               ├── LambdaUtil.java
  │                               └── NameUtil.java
- ├── dict-trans-demo                                                                        demo演示
+ ├── dict-trans-demo                                                                      demo演示
  │   └── src
  │       ├── main
  │       │   ├── java
@@ -65,7 +72,7 @@ dict-trans
  │       │   │               │   └── impl
  │       │   │               │       ├── CustomerTranslateServiceImpl.java
  │       │   │               │       ├── DemoServiceImpl.java
- │       │   │               │       └── ResultUnWrapper.java                            业务统一返回 解包器实现
+ │       │   │               │       └── ResultUnWrapper.java                             业务统一返回 解包器实现
  │       │   │               ├── dict
  │       │   │               │   └── CustomerDictImpl.java
  │       │   │               ├── entity
@@ -94,11 +101,11 @@ dict-trans
  │               └── com
  │                   └── aizuda
  │                       └── trans
- │                           ├── aspect                                                    翻译切面
+ │                           ├── aspect                                                   翻译切面
  │                           │   └── TranslateAspect.java
  │                           ├── config
  │                           │   └── TranslatorConfig.java                                默认翻译方法注入配置
- │                           ├── handler                                                   主要操作类
+ │                           ├── handler                                                  主要操作类
  │                           │   └── TranslatorHandle.java
  │                           └── service
  │                               ├── impl
@@ -108,13 +115,15 @@ dict-trans
  │                               │   ├── DictCacheTranslator.java                         数据字典翻译实现（调用 字典翻译接口实现）
  │                               │   ├── EnumTranslator.java                              枚举翻译实现
  │                               │   ├── JsonConvertTranslator.java                       json翻译实现
+ │                               │   ├── DefaultSummaryExtractServiceImpl.java            摘要提取服务默认实现
+ │                               │   ├── SummaryExtractTranslator.java                    摘要提取翻译实现
  │                               │   └── wrapper
  │                               │       └── IPageUnWrapper.java                          mybatis-plus 解包实现（就是取 records 而已）
- │                               └── UnWrapper.java                                        解包接口
+ │                               └── UnWrapper.java                                       解包接口
  └── doc
      ├── imgs
      │   └── demo.png
-     └── t_test.sql                                                                         demo 数据库脚本
+     └── t_test.sql                                                                       demo 数据库脚本
 ```
 
 ## 快速开始
@@ -122,9 +131,9 @@ dict-trans
 ### 引入jar包
 
 > 不要问为什么强依赖 `Hutool` 、 `MyBatis-Plus` 。
-> 
+>
 > 就是爱！
-> 
+>
 > 不用这两个的，下面可以不用看了！！！
 
 ```xml
@@ -135,7 +144,7 @@ dict-trans
   <dependency>
     <groupId>com.aizuda</groupId>
     <artifactId>dict-trans</artifactId>
-    <version>0.3</version>
+    <version>0.4</version>
   </dependency>
   
   <!-- hutool工具类（必须） -->
@@ -254,7 +263,7 @@ public class People {
 说明：标识在需要翻译的字段上，**只能用在字段上**
 
 参数：
-* dictClass：字典配置类，指定的 class 上必须是 `DictTranslate.class` 实现类 、 `IEnum` 接口的实现类 、 `Desensitized` 或者是 `@Dictionary` 注解；
+* dictClass：字典配置类，指定的 class 上必须是 `DictTranslate.class` 实现类 、 `IEnum` 接口的实现类 、 `Desensitized` 、 `SummaryExtract` 或者是 `@Dictionary` 注解；
 * translateField：翻译后的属性名，注意使用驼峰命名，默认为原属性名去除末尾的 "Id" 和 "Code" 再接上 "Name"；
 * groupValue：组属性值，在静态字典表这种拥有组属性的字典中需要手动传入一个定值（即：字典分组的 code）；
 * dictionary：指定 `Dictionary` 并设置其属性，将覆盖 `dictClass` 上的 `Dictionary` 注解的配置，指定了该属性后也可不指定 `dictClass` ，一般情况下不会使用；
@@ -342,7 +351,13 @@ private String userLevel;
 @ApiModelProperty("用户等级中文")
 private String userLevelName;
 
-// =========================== 示例5 自定义 ===========================
+// =========================== 示例5 摘要提取 ===========================
+
+/** 摘要提取 */
+@Translate(dictClass = SummaryExtract.class, maxLen = 10)
+private String introduce;
+
+// =========================== 示例6 自定义 ===========================
     
 // 5.1 翻译字段
 @Translate(dictionary = @Dictionary(translator = CustomerTranslateServiceImpl.class), translateField = "name")
@@ -544,6 +559,12 @@ public class TranslatorTest {
         Console.log("---> 响应嵌套数据：{}", JSONUtil.toJsonStr(result));
     }
 
+    @Test
+    public void demo6() {
+        List<People> peopleList = demoService.dictDemo2();
+        Console.log("---> 字典 & 脱敏 & 摘要提取 翻译结果：{}", JSONUtil.toJsonStr(peopleList));
+    }
+
 }
 ```
 
@@ -558,24 +579,25 @@ public class TranslatorTest {
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::               (v2.7.12)
 
-2023-05-25 20:47:53.135  INFO 34112 --- [           main] com.aizuda.trans.TranslatorTest          : Starting TranslatorTest using Java 1.8.0_311 on LAPTOP-N9LDSE74 with PID 34112 (started by nn200 in D:\idea_hengfeng\dict-trans\dict-trans-demo)
-2023-05-25 20:47:53.139  INFO 34112 --- [           main] com.aizuda.trans.TranslatorTest          : No active profile set, falling back to 1 default profile: "default"
-2023-05-25 20:47:55.086  WARN 34112 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : No MyBatis mapper was found in '[com.aizuda.trans]' package. Please check your configuration.
+2023-06-07 16:41:13.752  INFO 30996 --- [           main] com.aizuda.trans.TranslatorTest          : Starting TranslatorTest using Java 1.8.0_311 on LAPTOP-N9LDSE74 with PID 30996 (started by nn200 in D:\idea_hengfeng\dict-trans\dict-trans-demo)
+2023-06-07 16:41:13.755  INFO 30996 --- [           main] com.aizuda.trans.TranslatorTest          : No active profile set, falling back to 1 default profile: "default"
+2023-06-07 16:41:16.453  WARN 30996 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : No MyBatis mapper was found in '[com.aizuda.trans]' package. Please check your configuration.
  _ _   |_  _ _|_. ___ _ |    _ 
 | | |\/|_)(_| | |_\  |_)||_|_\ 
      /               |         
                         3.5.3.1 
-2023-05-25 20:48:02.307  INFO 34112 --- [           main] com.aizuda.trans.TranslatorTest          : Started TranslatorTest in 10.317 seconds (JVM running for 12.941)
+2023-06-07 16:41:24.532  INFO 30996 --- [           main] com.aizuda.trans.TranslatorTest          : Started TranslatorTest in 12.088 seconds (JVM running for 15.043)
 ---> 字典 & 脱敏 翻译结果：[{"sex":"1","sexName":"男","phone":"186****5678","id":"1","name":"结果1"},{"sex":"2","sexName":"女","phone":"186****5678","id":"2","name":"结果2"}]
 ---> 枚举 翻译结果：[{"status":"1","statusName":"未使用"},{"status":"2","statusName":"试运行"}]
-2023-05-25 20:48:03.226  INFO 34112 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2023-05-25 20:48:03.913  INFO 34112 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2023-06-07 16:41:25.435  INFO 30996 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2023-06-07 16:41:26.050  INFO 30996 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
 ---> 数据库 翻译结果：[{"id":"1","name":"张三"},{"id":"2","name":"李四"}]
 ---> json 翻译结果：[{"id":"1","name":"张三","json":"{\"abc\":\"def\", \"eg\":3}","jsonObj":{"abc":"def","eg":3}},{"id":"2","name":"李四","json":"[{\"a\":\"b\",\"c\":6},{\"d\":\"f\",\"e\":{\"a\":\"6\"}}]","jsonObj":[{"a":"b","c":6},{"d":"f","e":{"a":"6"}}]}]
 ---> 响应嵌套数据：{"status":200,"data":[{"sex":"1","sexName":"男","phone":"186****5678","id":"1","name":"结果1","device":{"status":"1","statusName":"未使用"}},{"sex":"2","sexName":"女","phone":"186****5678","id":"2","name":"结果2","device":{"status":"2","statusName":"试运行"}}]}
-2023-05-25 20:48:04.168  INFO 34112 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2023-05-25 20:48:04.194  INFO 34112 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
-Disconnected from the target VM, address: '127.0.0.1:1229', transport: 'socket'
+---> 字典 & 脱敏 & 摘要提取 翻译结果：[{"sex":"1","sexName":"男","phone":"186****5678","introduce":"我是一名热爱技术的软...","id":"1","name":"结果1"},{"sex":"2","sexName":"女","phone":"186****5678","introduce":"我是一名热爱艺术的画...","id":"2","name":"结果2"}]
+2023-06-07 16:41:26.390  INFO 30996 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2023-06-07 16:41:26.403  INFO 30996 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+Disconnected from the target VM, address: '127.0.0.1:35075', transport: 'socket'
 
 Process finished with exit code 0
 ```
