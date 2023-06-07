@@ -55,4 +55,10 @@ public class TranslatorTest {
         Console.log("---> 响应嵌套数据：{}", JSONUtil.toJsonStr(result));
     }
 
+    @Test
+    public void demo6() {
+        List<People> peopleList = demoService.dictDemo2();
+        Console.log("---> 字典 & 脱敏 & 摘要提取 翻译结果：{}", JSONUtil.toJsonStr(peopleList));
+    }
+
 }

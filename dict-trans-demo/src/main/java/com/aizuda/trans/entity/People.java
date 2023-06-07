@@ -6,6 +6,7 @@ import com.aizuda.trans.annotation.Translator;
 import com.aizuda.trans.constants.DesensitizedTypeConstants;
 import com.aizuda.trans.demo.impl.CustomerTranslateServiceImpl;
 import com.aizuda.trans.desensitized.Desensitized;
+import com.aizuda.trans.summary.SummaryExtract;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,7 +32,11 @@ public class People {
     /** 手机号脱敏 */
     @Translate(dictClass = Desensitized.class, translateField = "phone", desensitizedModel = DesensitizedTypeConstants.MOBILE_PHONE)
     private String phone;
-    
+
+    /** 摘要提取 */
+    @Translate(dictClass = SummaryExtract.class, maxLen = 10)
+    private String introduce;
+
     /** 自定义翻译 */
     @Translate(dictionary = @Dictionary(translator = CustomerTranslateServiceImpl.class), translateField = "name")
     private String id;
