@@ -22,7 +22,7 @@ public interface Translatable {
      * @param dictConfig  字典注解，可获取属性配置
      * @param extendParam 扩展参数
      * @return {@link List }<{@link Object }>
-     * @author song_jx
+     * @author nn200433
      */
     public List<Object> translate(String origin, Dictionary dictConfig, ExtendParam extendParam);
 

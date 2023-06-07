@@ -7,7 +7,7 @@ import com.aizuda.trans.service.SummaryExtractService;
 /**
  * 摘要提取服务默认实现
  *
- * @author song_jx
+ * @author nn200433
  * @date 2022-08-18 018 16:31:43
  */
 public class DefaultSummaryExtractServiceImpl implements SummaryExtractService {

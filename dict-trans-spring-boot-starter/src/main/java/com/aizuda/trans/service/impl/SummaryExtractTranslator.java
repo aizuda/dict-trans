@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * 摘要提取翻译
  *
- * @author song_jx
+ * @author nn200433
  * @date 2023-06-07 09:32:49
  */
 @Component

@@ -36,7 +36,7 @@ public class TranslatorConfig {
      * 注册摘要提取服务默认实现
      *
      * @return {@link DictTranslateService }
-     * @author song_jx
+     * @author nn200433
      */
     @Bean
     @ConditionalOnMissingBean
