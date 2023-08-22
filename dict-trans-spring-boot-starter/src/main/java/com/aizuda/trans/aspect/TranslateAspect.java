@@ -1,12 +1,12 @@
 package com.aizuda.trans.aspect;
 
 import com.aizuda.trans.handler.TranslatorHandle;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +19,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class TranslateAspect {
 
-    @Autowired
-    private GenericConversionService genericConversionService;
+    private final GenericConversionService genericConversionService;
 
     @Pointcut("@annotation(com.aizuda.trans.annotation.Translator)")
     public void pointCut() {

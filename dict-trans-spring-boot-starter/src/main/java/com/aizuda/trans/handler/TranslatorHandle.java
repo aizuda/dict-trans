@@ -1,9 +1,11 @@
 package com.aizuda.trans.handler;
 
-import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.cache.Cache;
+import cn.hutool.cache.CacheUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.lang.Opt;
 import cn.hutool.core.util.*;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
@@ -22,6 +24,7 @@ import com.aizuda.trans.summary.ISummaryExtract;
 import com.aizuda.trans.util.NameUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import sun.reflect.annotation.AnnotationType;
 
 import java.lang.annotation.Annotation;
@@ -44,7 +47,12 @@ import static com.aizuda.trans.util.LambdaUtil.uncheck;
  */
 @Slf4j
 public class TranslatorHandle {
-    
+
+    /** 条件字段是否为常量值的前缀 */
+    private static String                     CONDITION_FIELD_IS_VALUE_PREFIX = "V:";
+    /** 循环遍历缓存 */
+    private static Cache<String, List<Field>> LOOP_FIELD_CACHE                = CacheUtil.newLFUCache(100);
+
     /**
      * 翻译Map或Entity或Page
      *
@@ -84,7 +92,7 @@ public class TranslatorHandle {
      * @param <T>     支持Entity或者Map
      * @return List
      */
-    public static <T> Collection<T> parse(Collection<T> originList) {
+    private static <T> Collection<T> parse(Collection<T> originList) {
         if (CollUtil.isEmpty(originList)) {
             return originList;
         }
@@ -93,18 +101,24 @@ public class TranslatorHandle {
         final FormatType fieldFormatType = getFieldType(originList);
 
         // 翻译数据
-        originList.forEach(bean -> {
+        originList.parallelStream().forEach(bean -> {
             final Class<?> beanClass      = bean.getClass();
+            /*
             final Field[]  declaredFields = ReflectUtil.getFields(beanClass);
             // 循环处理需要转换的字段，字段上的注解链上需要有@Transform，且字段类型必须为String
             Arrays.stream(declaredFields)
                     // 只转换简单值类型的属性（会把值转为String类型处理），其他类型的属性代表是嵌套情况需要过滤掉，后面处理
-                    .filter(field -> ClassUtil.isSimpleValueType(field.getType()) && AnnotationUtil.hasAnnotation(field, Translate.class))
+                    .filter(field -> field.isAnnotationPresent(Translate.class) && ClassUtil.isSimpleValueType(field.getType()))
                     .forEach(field -> transformField(bean, fieldFormatType, field));
             // 转换嵌套字段，字段上需要标注@Transform且字段类型不为String（递归转换）
             Arrays.stream(declaredFields)
-                    .filter(field -> field.getType() != String.class && field.isAnnotationPresent(Translator.class))
+                    .filter(field -> field.isAnnotationPresent(Translator.class) && !ClassUtil.isSimpleValueType(field.getType()))
                     .forEach(field -> transform(ReflectUtil.invoke(bean, ReflectUtil.getMethodByName(beanClass, "get" + StrUtil.upperFirst(field.getName())))));
+             */
+            // 只转换简单值类型的属性（会把值转为String类型处理），其他类型的属性代表是嵌套情况需要过滤掉，后面处理
+            getLoopFields(beanClass, Translate.class).forEach(field -> transformField(bean, fieldFormatType, field));
+            // 转换嵌套字段，字段上需要标注@Transform且字段类型不为String（递归转换）
+            getLoopFields(beanClass, Translator.class).forEach(field -> transform(ReflectUtil.invoke(bean, ReflectUtil.getMethodByName(beanClass, "get" + StrUtil.upperFirst(field.getName())))));
         });
 
         return originList;
@@ -119,10 +133,7 @@ public class TranslatorHandle {
      * @return {@link List }<{@link Object }>
      * @author nn200433
      */
-    public static List<Object> parse(String originValue, Dictionary dictionaryConfig, ExtendParam  extendParam) {
-        if (originValue == null) {
-            return null;
-        }
+    private static List<Object> parse(String originValue, Dictionary dictionaryConfig, ExtendParam  extendParam) {
         final Translatable translator  = getTranslatable(extendParam.getDictClass(), dictionaryConfig.translator());
         return CollUtil.defaultIfEmpty(translator.translate(originValue, dictionaryConfig, extendParam), Collections.emptyList());
     }
@@ -157,10 +168,9 @@ public class TranslatorHandle {
         }
 
         // 获取条件字段值
-        String conditionFieldValue = null;
-        if (StrUtil.isNotBlank(conditionField)) {
-            conditionFieldValue = Convert.toStr(getProperty(origin, conditionField));
-        }
+        String conditionFieldValue = Opt.ofBlankAble(conditionField)
+                .map(c -> StrUtil.startWith(c, CONDITION_FIELD_IS_VALUE_PREFIX) ? StrUtil.removePrefix(c, CONDITION_FIELD_IS_VALUE_PREFIX) : Convert.toStr(getProperty(origin, c)))
+                .get();
 
         // 获取翻译结果并脱敏处理
         final ExtendParam extendParam      = new ExtendParam(groupValue, conditionFieldValue, dictClass, maxLen);
@@ -367,9 +377,9 @@ public class TranslatorHandle {
      */
     private static Method getMethod(Class<?> clazz, String fieldName, String prefix) {
         final String methodName = prefix + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-        return Stream.of(ReflectUtil.getMethods(clazz, m -> m.getName().equals(methodName))).findAny()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        clazz.getSimpleName() + ".class中未添加翻译属性" + fieldName + "或其对应get/set方法"));
+        return Stream.of(ReflectUtil.getMethods(clazz, m -> m.getName().equals(methodName)))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException(clazz.getSimpleName() + ".class中未添加翻译属性" + fieldName + "或其对应get/set方法"));
     }
     
     /**
@@ -388,8 +398,7 @@ public class TranslatorHandle {
         }
         
         // 否则进行脱敏操作
-        final DesensitizedUtil.DesensitizedType desensitizedType = EnumUtil.fromString(
-                DesensitizedUtil.DesensitizedType.class, desensitizedModel, null);
+        final DesensitizedUtil.DesensitizedType desensitizedType = EnumUtil.fromString(DesensitizedUtil.DesensitizedType.class, desensitizedModel, null);
         if (null == desensitizedType && StrUtil.isWrap(desensitizedModel, StrUtil.DELIM_START, StrUtil.DELIM_END)) {
             // 找不到匹配脱敏模型时，用hide解析
             final String model      = StrUtil.unWrap(desensitizedModel, StrUtil.DELIM_START, StrUtil.DELIM_END);
@@ -441,8 +450,40 @@ public class TranslatorHandle {
         }
         
         // Translatable 实现类上配置了 @Component 则使用 Spring 容器获取 否者 new 一个实现类
-        return translatorClass.isAnnotationPresent(Component.class) ? SpringUtil.getBean(translatorClass) : uncheck(translatorClass::newInstance);
+        return  translatorClass.isAnnotationPresent(Service.class) || translatorClass.isAnnotationPresent(Component.class) ? SpringUtil.getBean(translatorClass) : uncheck(translatorClass::newInstance);
     }
-    
+
+    /**
+     * 获取循环字段
+     *
+     * @param beanClass       bean类
+     * @param annotationClass 注释类
+     * @return {@link List }<{@link Field }>
+     * @author nn200433
+     */
+    private static List<Field> getLoopFields(Class<?> beanClass, Class<? extends Annotation> annotationClass) {
+        final String key             = beanClass.getName() + StrUtil.UNDERLINE + annotationClass.getName();
+        List<Field>  resultFieldList = LOOP_FIELD_CACHE.get(key);
+        if (ObjUtil.isNull(resultFieldList)) {
+            final Field[] declaredFields = ReflectUtil.getFields(beanClass);
+            if (ClassUtil.isAssignable(Translate.class, annotationClass)) {
+                log.debug("--->  {} 初始化要翻译的字段缓存", key);
+                // 字段翻译
+                resultFieldList = Arrays.stream(declaredFields)
+                        // 过滤出简单类型、简单数组类型、Collection实现类
+                        .filter(f -> f.isAnnotationPresent(Translate.class) && (ClassUtil.isSimpleValueType(f.getType()) || ClassUtil.isSimpleTypeOrArray(f.getType()) || ClassUtil.isAssignable(Collection.class, f.getType())))
+                        .collect(Collectors.toList());
+            } else {
+                log.debug("--->  {} 初始化要嵌套翻译的字段缓存", key);
+                // 嵌套翻译
+                resultFieldList = Arrays.stream(declaredFields)
+                        .filter(f -> f.isAnnotationPresent(Translator.class) && !ClassUtil.isSimpleValueType(f.getType()))
+                        .collect(Collectors.toList());
+            }
+            LOOP_FIELD_CACHE.put(key, resultFieldList);
+        }
+        return resultFieldList;
+    }
+
 }
 

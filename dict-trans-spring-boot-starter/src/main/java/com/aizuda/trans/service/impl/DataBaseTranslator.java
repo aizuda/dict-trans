@@ -15,8 +15,8 @@ import com.aizuda.trans.enums.FormatType;
 import com.aizuda.trans.service.Translatable;
 import com.aizuda.trans.util.NameUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -35,13 +35,13 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class DataBaseTranslator implements Translatable {
     
     /**
      * 获取数据源
      */
-    @Autowired(required = false)
-    private DataSource dataSource;
+    private final DataSource dataSource;
     
     @Override
     public List<Object> translate(String origin, Dictionary dictConfig, ExtendParam extendParam) {
