@@ -68,4 +68,12 @@ public interface DemoService {
      */
     public Result responseNestedMockTest();
 
+    /**
+     * 20230822 示例
+     *
+     * @return {@link List }<{@link People4 }>
+     * @author nn200433
+     */
+    public List<People4> demo0822();
+
 }

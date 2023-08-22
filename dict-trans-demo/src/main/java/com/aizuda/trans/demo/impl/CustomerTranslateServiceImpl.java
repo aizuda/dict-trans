@@ -20,11 +20,20 @@ public class CustomerTranslateServiceImpl implements Translatable {
 
     @Override
     public List<Object> translate(String origin, Dictionary dictConfig, ExtendParam extendParam) {
-        List<Object> rList = new ArrayList<Object>(1);
-        if (StrUtil.equals(origin, "1")) {
-            rList.add("结果1");
+        final String condition = extendParam.getConditionValue();
+        List<Object> rList     = new ArrayList<Object>(1);
+        if (StrUtil.isNotBlank(condition)) {
+            if (StrUtil.equals(condition, "Switch") && StrUtil.equals(origin, "任天堂")) {
+                rList.add("这是任天堂的 Switch 玩家");
+            } else {
+                rList.add("这是XX设备玩家");
+            }
         } else {
-            rList.add("结果2");
+            if (StrUtil.equals(origin, "1")) {
+                rList.add("结果1");
+            } else {
+                rList.add("结果2");
+            }
         }
         return rList;
     }

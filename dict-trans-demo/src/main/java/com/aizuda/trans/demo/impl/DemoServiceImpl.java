@@ -75,5 +75,11 @@ public class DemoServiceImpl implements DemoService {
         return Result.builder().status(200).data(responseNestedMock()).build();
     }
 
+    @Override
+    public List<People4> demo0822() {
+        People4 man   = People4.builder().tags(CollUtil.newArrayList("1", "2", "3")).factory("任天堂").build();
+        People4 woman = People4.builder().tags(CollUtil.newArrayList("1", "2")).factory("索尼").build();
+        return CollUtil.newArrayList(man, woman);
+    }
 
 }
