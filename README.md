@@ -107,8 +107,12 @@ dict-trans
  │                           │   └── TranslatorConfig.java                                默认翻译方法注入配置
  │                           ├── handler                                                  主要操作类
  │                           │   └── TranslatorHandle.java
+ │                           ├── util                                                     工具库
+ │                           │   └── TranslatorUtil.java                                  提供翻译工具类（免写 @Translator 注解）
  │                           └── service
  │                               ├── impl
+ │                               │   ├── convert
+ │                               │   │   └── CustomerStrConvertImpl.java                  改动 Hutool 的字符串转换类
  │                               │   ├── DataBaseTranslator.java                          数据库翻译服务
  │                               │   ├── DefaultDictTranslateServiceImpl.java             默认数据字典翻译实现（实现字典翻译接口。仿照该方法，实现自己的业务）
  │                               │   ├── DesensitizedTranslator.java                      脱敏实现（没啥操作，就返回原值）
@@ -144,14 +148,14 @@ dict-trans
   <dependency>
     <groupId>com.aizuda</groupId>
     <artifactId>dict-trans</artifactId>
-    <version>0.4</version>
+    <version>0.5</version>
   </dependency>
   
   <!-- hutool工具类（必须） -->
   <dependency>
     <groupId>cn.hutool</groupId>
     <artifactId>hutool-all</artifactId>
-    <version>5.8.18</version>
+    <version>5.8.21</version>
   </dependency>
   
   <!-- mybatis-plus 工具（必须） -->
@@ -267,7 +271,7 @@ public class People {
 * translateField：翻译后的属性名，注意使用驼峰命名，默认为原属性名去除末尾的 "Id" 和 "Code" 再接上 "Name"；
 * groupValue：组属性值，在静态字典表这种拥有组属性的字典中需要手动传入一个定值（即：字典分组的 code）；
 * dictionary：指定 `Dictionary` 并设置其属性，将覆盖 `dictClass` 上的 `Dictionary` 注解的配置，指定了该属性后也可不指定 `dictClass` ，一般情况下不会使用；
-* conditionField：指定判断条件字段（仅自定义翻译实现时用来进行判断）;
+* conditionField：指定判断条件字段（仅自定义翻译实现时用来进行判断）『20230822更新后支持固定值，格式：V:<值>』;
 * desensitizedModel：脱敏模型，用来给数据脱敏打 `*` 使用。常见模型在 `DesensitizedTypeConstants` 常量中。也可自定义，格式：`{含开始位置,含结束位置}` ，举例：`{1,2}` ；
 
   *注：字段自身脱敏时，需将 `dictClass` 设置为 `Desensitized.class`（此时字段仅返回原值后脱敏。可与翻译共用，那样先翻译后脱敏。）*
