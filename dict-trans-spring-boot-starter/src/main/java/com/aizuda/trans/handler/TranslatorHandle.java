@@ -6,7 +6,12 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.Opt;
-import cn.hutool.core.util.*;
+import cn.hutool.core.util.ClassUtil;
+import cn.hutool.core.util.DesensitizedUtil;
+import cn.hutool.core.util.EnumUtil;
+import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.aizuda.trans.annotation.Dictionary;
@@ -19,7 +24,12 @@ import com.aizuda.trans.enums.FormatType;
 import com.aizuda.trans.enums.IEnum;
 import com.aizuda.trans.json.IJsonConvert;
 import com.aizuda.trans.service.Translatable;
-import com.aizuda.trans.service.impl.*;
+import com.aizuda.trans.service.impl.DataBaseTranslator;
+import com.aizuda.trans.service.impl.DesensitizedTranslator;
+import com.aizuda.trans.service.impl.DictCacheTranslator;
+import com.aizuda.trans.service.impl.EnumTranslator;
+import com.aizuda.trans.service.impl.JsonConvertTranslator;
+import com.aizuda.trans.service.impl.SummaryExtractTranslator;
 import com.aizuda.trans.summary.ISummaryExtract;
 import com.aizuda.trans.util.NameUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +41,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,7 +92,11 @@ public class TranslatorHandle {
                     if (ObjUtil.isNull(value)) {
                         continue;
                     }
-                    value = CollUtil.getFirst(parse(Collections.singletonList(value)));
+                    if (value instanceof Collection) {
+                        value = parse((Collection) value);
+                    } else {
+                        value = CollUtil.getFirst(parse(Collections.singletonList(value)));
+                    }
                 }
                 return (T) m;
             }
